@@ -7,5 +7,6 @@ include doc/sphinx/*
 include doc/sphinx/.static/.keepme
 include src/*.h
 include setup.py
+recursive-include sqlcipher *
 
 global-exclude *~ *.pyc
