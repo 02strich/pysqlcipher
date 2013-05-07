@@ -61,7 +61,7 @@ class DocBuilder(Command):
 class SQLCipherBuildExtension(build_ext):
     def build_extension(self, ext):
         subprocess.call(["make", "distclean"], cwd=os.path.join(os.path.dirname(__file__), "sqlcipher"))
-        subprocess.check_call("./configure -enable-tempstore=yes CFLAGS=\"-DSQLITE_HAS_CODEC\" LDFLAGS=\"-lcrypto\"", shell=True, cwd=os.path.join(os.path.dirname(__file__), "sqlcipher"))
+        subprocess.check_call("./configure --enable-tempstore=yes CFLAGS=\"-DSQLITE_HAS_CODEC\" LDFLAGS=\"-lcrypto\"", shell=True, cwd=os.path.join(os.path.dirname(__file__), "sqlcipher"))
         subprocess.check_call(["make"], cwd=os.path.join(os.path.dirname(__file__), "sqlcipher"))
         build_ext.build_extension(self, ext)
 
