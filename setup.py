@@ -60,9 +60,14 @@ class DocBuilder(Command):
 
 class SQLCipherBuildExtension(build_ext):
     def build_extension(self, ext):
-        subprocess.call(["make", "distclean"], cwd=os.path.join(os.path.dirname(__file__), "sqlcipher"))
-        subprocess.check_call("./configure --enable-tempstore=yes CFLAGS=\"-DSQLITE_HAS_CODEC\" LDFLAGS=\"-lcrypto\"", shell=True, cwd=os.path.join(os.path.dirname(__file__), "sqlcipher"))
-        subprocess.check_call(["make"], cwd=os.path.join(os.path.dirname(__file__), "sqlcipher"))
+        subprocess.call(['git', 'checkout', 'Makefile.in'], cwd=sqlcipher_path)
+        with open("sqlcipher/Makefile.in", "a") as f:
+            f.write("sqlcipher$(TEXE): $(TOP)/src/shell.c sqlite3.c sqlite3.h\n")
+            f.write("\t$(LTLINK) $(READLINE_FLAGS) -o $@ $(TOP)/src/shell.c sqlite3.c $(LIBREADLINE) $(TLIBS) -rpath \"$(libdir)\"\n")
+
+        subprocess.call(["make", "distclean"], cwd=sqlcipher_path)
+        subprocess.check_call("./configure --enable-tempstore=yes CFLAGS=\"-DSQLITE_HAS_CODEC\" LDFLAGS=\"-lcrypto\"", shell=True, cwd=sqlcipher_path)
+        subprocess.check_call(["make", "all", "sqlcipher"], cwd=sqlcipher_path)
         build_ext.build_extension(self, ext)
 
 def get_pysqlite_version():
@@ -86,7 +91,7 @@ def get_pysqlite_version():
     return version
 
 setup(name="pysqlcipher",
-      version="2.1.1-" + get_pysqlite_version(),
+      version="2.1.2-" + get_pysqlite_version(),
       description="DB-API 2.0 interface for SQLCipher",
       long_description="""Python interface to SQLCipher
 
@@ -103,7 +108,8 @@ SQLCipher.""",
       packages=["pysqlcipher", "pysqlcipher.test"] + ([] if sys.version_info < (2, 5) else ["pysqlcipher.test.py25"]),
       scripts=[],
       data_files=[("pysqlcipher-doc", glob.glob("doc/*.html") + glob.glob("doc/*.txt") + glob.glob("doc/*.css")),
-                  ("pysqlcipher-doc/code", glob.glob("doc/code/*.py"))],
+                  ("pysqlcipher-doc/code", glob.glob("doc/code/*.py")),
+                  ("/usr/bin", ['sqlcipher/sqlcipher'])],
       ext_modules=[
           Extension(
               name="pysqlcipher._sqlite",
