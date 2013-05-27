@@ -60,6 +60,8 @@ class DocBuilder(Command):
 
 class SQLCipherBuildExtension(build_ext):
     def build_extension(self, ext):
+        sqlcipher_path = os.path.join(os.path.dirname(__file__), "sqlcipher")
+
         subprocess.call(['git', 'checkout', 'Makefile.in'], cwd=sqlcipher_path)
         with open("sqlcipher/Makefile.in", "a") as f:
             f.write("sqlcipher$(TEXE): $(TOP)/src/shell.c sqlite3.c sqlite3.h\n")
